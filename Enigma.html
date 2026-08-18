@@ -1,0 +1,525 @@
+<html style="margin:0;padding:0;">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+(function(){
+  var s = document.createElement('style');
+  s.textContent = `
+  :root{
+    --wood-1:#3a2414;--wood-2:#26170b;--wood-3:#4b2f1b;
+    --metal:#1a1a1a;--metal-2:#2a2a2a;--metal-3:#3a3a3a;
+    --lamp-off:#2a1f14;--lamp-on:#ffb347;--lamp-glow:#ff8c1a;
+    --paper:#f2e8cf;--ink:#1a1208;
+  }
+  *{-webkit-tap-highlight-color:transparent}
+  body{background:radial-gradient(1200px 700px at 50% 20%,#4a3726,#1a0f06);font-family:'Courier Prime',monospace}
+
+  /* KOTAK MESIN */
+  .enigma-wrap{perspective:1800px}
+  .enigma-box{
+    background:linear-gradient(180deg,var(--wood-1),var(--wood-2) 60%,#120a04);
+    border-radius:18px;padding:16px;position:relative;
+    box-shadow:inset 0 2px 0 rgba(255,200,140,.25),inset 0 -6px 0 #0a0603,0 30px 60px rgba(0,0,0,.7),0 2px 0 #000;
+    border:2px solid #0a0603;transform-style:preserve-3d;transition:transform .6s ease;
+  }
+  .rivet{width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#d4a853,#4a3410);border:1px solid #000;position:absolute}
+  .plate{background:linear-gradient(180deg,#1f1f1f,#0e0e0e);border-radius:10px;border:1px solid #000;box-shadow:inset 0 2px 4px rgba(0,0,0,.8),inset 0 -1px 0 rgba(255,255,255,.06)}
+  .brass{background:linear-gradient(180deg,#d4a853,#8a6420);color:#2a1a05;text-shadow:0 1px 0 rgba(255,255,255,.3);border:1px solid #4a3410;font-weight:700}
+
+  /* TUTUP MESIN (LID) BISA DIBUKA */
+  .lid{
+    position:absolute;left:0;right:0;top:0;height:50%;z-index:30;transform-origin:top center;transform:rotateX(0deg);transition:transform .8s cubic-bezier(.4,0,.2,1);
+    background:linear-gradient(180deg,var(--wood-3),var(--wood-1));border-radius:18px 18px 0 0;border:2px solid #0a0603;border-bottom:none;
+    box-shadow:inset 0 2px 0 rgba(255,200,140,.25);padding:14px;
+  }
+  .lid.open{transform:rotateX(-115deg);box-shadow:0 -10px 30px rgba(0,0,0,.5)}
+  .lid-inner{height:100%;border:1px solid #4a3410;border-radius:8px;background:
+    repeating-linear-gradient(90deg,transparent 0 3px,rgba(0,0,0,.05) 3px 4px),
+    linear-gradient(180deg,#2a4a3a,#1a3025);padding:10px;color:#c9e0d0;font-family:'Special Elite',serif;font-size:10px;line-height:1.5;position:relative;overflow:hidden}
+  .lid-inner::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 40%)}
+  .spare-bulbs{position:absolute;top:8px;right:8px;display:flex;gap:4px}
+  .bulb{width:12px;height:16px;border-radius:6px 6px 3px 3px;background:radial-gradient(circle at 40% 30%,#fff,#ffb347 40%,#5a2a00);border:1px solid #000;box-shadow:0 0 6px #ff8c1a}
+  .lid-handle{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:80px;height:10px;border-radius:4px;background:linear-gradient(180deg,#d4a853,#6a4a18);border:1px solid #000}
+
+  /* ROTOR */
+  .rotor-knob{width:52px;height:78px;border-radius:8px;background:repeating-linear-gradient(180deg,#2a2a2a 0 2px,#1a1a1a 2px 5px);border:2px solid #000;box-shadow:inset 0 0 0 2px #3a3a3a,0 4px 8px rgba(0,0,0,.6);position:relative;cursor:ns-resize;transition:transform .15s}
+  .rotor-window{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:34px;height:38px;border-radius:4px;background:linear-gradient(180deg,#f5ecd2,#e6d7a8);border:2px solid #000;box-shadow:inset 0 3px 6px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-family:'Special Elite',serif;font-size:26px;font-weight:700;color:#1a1208}
+  .rotor-arrow{position:absolute;left:50%;transform:translateX(-50%);color:#c9a96a;font-size:9px;font-weight:700}.rotor-up{top:4px}.rotor-dn{bottom:4px}
+
+  /* POWER SELECTOR KANAN ATAS (GAUGE + KNOB + 2 SEKRUP) */
+  .power-block{position:relative;width:90px;height:100%}
+  .gauge{width:54px;height:28px;border-radius:14px 14px 4px 4px;background:linear-gradient(180deg,#0a0a0a,#1a1a1a);border:1px solid #000;position:relative;overflow:hidden;margin:0 auto}
+  .gauge::before{content:"";position:absolute;left:4px;right:4px;top:6px;bottom:6px;background:linear-gradient(180deg,#2a1000,#0a0500);border-radius:8px}
+  .needle{position:absolute;left:50%;bottom:6px;width:2px;height:14px;background:#ff3030;transform-origin:bottom center;transform:translateX(-50%) rotate(-40deg);transition:transform .15s ease;box-shadow:0 0 3px #ff3030}
+  .needle.on{transform:translateX(-50%) rotate(25deg)}
+  .gauge-scale{position:absolute;inset:2px;display:flex;justify-content:space-between;padding:2px 6px;font-size:7px;color:#555}
+  .pwr-knob{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4a4a4a,#1a1a1a 70%);border:2px solid #000;box-shadow:inset 0 2px 3px rgba(255,255,255,.2),0 3px 6px rgba(0,0,0,.6);cursor:pointer;position:relative;margin:4px auto 0;transition:transform .2s}
+  .pwr-knob::after{content:"";position:absolute;top:4px;left:50%;width:3px;height:12px;background:#ffb347;transform:translateX(-50%);border-radius:2px;box-shadow:0 0 4px #ff8c1a}
+  .pwr-label{text-align:center;font-size:8px;color:#c9a96a;margin-top:2px;font-family:'Special Elite',serif}
+  .terminals{display:flex;gap:8px;justify-content:center;margin-top:4px}
+  .terminal{width:12px;height:12px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d4a853,#3a2408);border:1px solid #000;box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+  .fn-btns{display:flex;flex-direction:column;gap:4px;justify-content:center;height:100%}
+  .fn-btn{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3a3a3a,#0a0a0a);border:2px solid #000;box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 2px 0 #000;cursor:pointer;position:relative}
+  .fn-btn:active{transform:translateY(1px);box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+  .fn-btn::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid #000;background:radial-gradient(circle at 40% 40%,#ff3030,#5a0000)}
+
+  /* LAMPBOARD */
+  .lamp{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#3a2a1a 0%,var(--lamp-off) 55%,#0a0603 100%);border:2px solid #000;box-shadow:inset 0 3px 6px rgba(0,0,0,.9),0 1px 0 #000;display:flex;align-items:center;justify-content:center;font-family:'Special Elite',serif;font-size:16px;font-weight:700;color:#3a2a1a;transition:all .08s ease}
+  .lamp.on{background:radial-gradient(circle at 35% 30%,#fff6cc 0%,var(--lamp-on) 45%,var(--lamp-glow) 80%);color:#5a2a00;box-shadow:inset 0 0 10px #fff,0 0 18px var(--lamp-glow),0 0 40px rgba(255,140,26,.55),0 1px 0 #000}
+  .lamp.dim{filter:brightness(.4)}
+
+  /* KEYBOARD + TOMBOL O MERAH + SWITCH KIRI KANAN */
+  .kb-wrap{position:relative;display:flex;align-items:center;justify-content:center;gap:6px}
+  .side-switch{width:26px;height:46px;border-radius:6px;background:linear-gradient(180deg,#3a3a3a,#0a0a0a);border:2px solid #000;box-shadow:inset 0 2px 3px rgba(255,255,255,.15),0 3px 6px rgba(0,0,0,.6);position:relative;cursor:pointer}
+  .side-switch .lever{position:absolute;left:3px;right:3px;height:18px;border-radius:4px;background:linear-gradient(180deg,#d4a853,#6a4a18);border:1px solid #000;top:4px;transition:top .2s;box-shadow:0 2px 0 #000}
+  .side-switch.on .lever{top:22px}
+  .red-O{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff5050,#8a0000 70%);border:2px solid #3a0000;box-shadow:inset 0 2px 3px rgba(255,255,255,.3),0 3px 0 #3a0000,0 5px 10px rgba(0,0,0,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Special Elite',serif;font-weight:700;font-size:14px;text-shadow:0 1px 0 #000;transition:all .06s}
+  .red-O:active{transform:translateY(2px);box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 #3a0000}
+  .red-label{font-size:8px;color:#ff8080;text-align:center;margin-top:2px;font-family:'Special Elite',serif}
+
+  .tkey{width:42px;height:42px;border-radius:50%;position:relative;cursor:pointer;background:radial-gradient(circle at 35% 30%,#4a4a4a,#2e2e2e 40%,#141414 80%);border:2px solid #0a0a0a;box-shadow:inset 0 2px 2px rgba(255,255,255,.25),inset 0 -4px 6px rgba(0,0,0,.6),0 5px 0 #000,0 8px 14px rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-family:'Special Elite',serif;font-size:16px;font-weight:700;color:#f0e6d0;text-shadow:0 1px 0 #000;transition:all .05s ease;user-select:none}
+  .tkey::before{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid rgba(0,0,0,.6);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+  .tkey:active,.tkey.pressed{transform:translateY(4px);box-shadow:inset 0 2px 4px rgba(0,0,0,.7),0 1px 0 #000,0 2px 4px rgba(0,0,0,.4)}
+  .tkey.off{filter:grayscale(1) brightness(.4);cursor:not-allowed}
+
+  /* PLUGBOARD */
+  .plug-hole{width:24px;height:24px;border-radius:50%;cursor:pointer;position:relative;background:radial-gradient(circle at 35% 30%,#2a2a2a,#0a0a0a 70%);border:2px solid #000;box-shadow:inset 0 2px 3px rgba(0,0,0,.9),0 1px 0 #333}
+  .plug-hole.paired{background:radial-gradient(circle at 35% 30%,#c8a25a,#7a5a1a 70%)}
+  .plug-label{position:absolute;left:50%;top:110%;transform:translateX(-50%);font-size:9px;color:#c9a96a;font-weight:700;white-space:nowrap}
+
+  /* DIMMER */
+  .dimmer{-webkit-appearance:none;appearance:none;width:70px;height:6px;border-radius:3px;background:linear-gradient(90deg,#0a0a0a,#3a3a3a);outline:none;transform:rotate(-90deg);transform-origin:center}
+  .dimmer::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#d4a853,#4a3410);border:1px solid #000;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.6)}
+
+  .paper{background:repeating-linear-gradient(0deg,var(--paper) 0 20px,#e8dcbd 20px 21px);border:1px solid #8a7a55;border-radius:4px;font-family:'Special Elite',serif;color:var(--ink);box-shadow:inset 0 0 20px rgba(120,80,20,.2),0 4px 10px rgba(0,0,0,.4)}
+  .stamp{border:3px double #8a1a1a;color:#8a1a1a;border-radius:6px;padding:3px 8px;font-weight:700;letter-spacing:.15em;transform:rotate(-4deg);display:inline-block;opacity:.85}
+  `;
+  document.head.appendChild(s);
+})();
+</script>
+<div style="background-color:transparent;box-sizing:border-box;">
+  <div style="min-height:100vh">
+    <div class="max-w-5xl mx-auto px-3 py-5">
+
+      <!-- JUDUL + KONTROL -->
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 class="text-xl font-bold" style="font-family:'Special Elite',serif;color:#f2e8cf;text-shadow:0 2px 0 #000">⚙ ENIGMA I — WEHRMACHT 1941 · REPLIKA 1:1</h1>
+          <p class="text-xs mt-0.5" style="color:#c9a96a">Tutup kayu bisa dibuka · Power switch · Gauge arus · Test lamp · Dimmer · Tombol O merah</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="toggleLid()" class="brass px-3 py-1.5 rounded text-xs">📦 Buka/Tutup Tutup</button>
+          <button onclick="toggleSound()" id="sfxBtn" class="brass px-3 py-1.5 rounded text-xs">🔊 SFX ON</button>
+          <button onclick="resetMachine()" class="brass px-3 py-1.5 rounded text-xs">↺ RESET</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        <!-- MESIN -->
+        <div class="lg:col-span-2 enigma-wrap">
+          <div class="enigma-box" id="machineBox">
+            <span class="rivet" style="top:6px;left:8px"></span><span class="rivet" style="top:6px;right:8px"></span>
+            <span class="rivet" style="bottom:6px;left:8px"></span><span class="rivet" style="bottom:6px;right:8px"></span>
+
+            <!-- TUTUP MESIN (BISA DIBUKA) -->
+            <div class="lid" id="lid">
+              <div class="lid-inner">
+                <div class="spare-bulbs"><span class="bulb"></span><span class="bulb"></span><span class="bulb"></span></div>
+                <p class="font-bold text-xs mb-1" style="color:#ffd98a">BEDIENUNGSANWEISUNG</p>
+                <p>1. Schalter auf BATTERIE stellen.<br>2. Walzen nach Schlüsselzettel einstellen.<br>3. Stecker verbinden.<br>4. Klartext eintippen — Lampen ablesen.<br>5. Nach Gebrauch: AUS schalten.</p>
+                <p class="mt-2" style="color:#8ab0a0">⚠ Nur für Dienstgebrauch · Zerstören nach Gebrauch</p>
+                <div class="lid-handle"></div>
+              </div>
+            </div>
+
+            <!-- BARIS ATAS: ROTOR + POWER BLOCK (GAUGE+KNOB+TERMINAL+2 TOMBOL) -->
+            <div class="plate p-3 mb-2 mt-12 relative">
+              <div class="flex items-stretch justify-between gap-2">
+
+                <!-- KIRI: 2 TOMBOL FUNGSI + SWITCH KECIL -->
+                <div class="fn-btns items-center">
+                  <div class="fn-btn" title="Filter / Dimmer" onclick="toggleDim()"></div>
+                  <div class="text-[8px] text-center" style="color:#c9a96a">FIL</div>
+                  <div class="fn-btn" title="Lamp Test" onmousedown="lampTest(true)" onmouseup="lampTest(false)" ontouchstart="lampTest(true)" ontouchend="lampTest(false)"></div>
+                  <div class="text-[8px] text-center" style="color:#c9a96a">PRF</div>
+                </div>
+
+                <!-- TENGAH: 3 ROTOR -->
+                <div class="flex gap-6 justify-center flex-1">
+                  <div class="flex flex-col items-center gap-1">
+                    <select id="wL" class="brass rounded px-1 text-[10px]" onchange="reprocess()"><option value="I" selected>I</option><option value="II">II</option><option value="III">III</option></select>
+                    <div class="rotor-knob" data-rot="L" onmousedown="startDragRotor(event,'L')" ontouchstart="startDragRotor(event,'L')"><span class="rotor-arrow rotor-up">▲</span><div class="rotor-window" id="rL">A</div><span class="rotor-arrow rotor-dn">▼</span></div>
+                    <span class="text-[9px]" style="color:#888">R<input id="ringL" type="number" min="1" max="26" value="1" class="w-8 brass rounded text-center text-[9px]" onchange="reprocess()"></span>
+                  </div>
+                  <div class="flex flex-col items-center gap-1">
+                    <select id="wM" class="brass rounded px-1 text-[10px]" onchange="reprocess()"><option value="I">I</option><option value="II" selected>II</option><option value="III">III</option></select>
+                    <div class="rotor-knob" data-rot="M" onmousedown="startDragRotor(event,'M')" ontouchstart="startDragRotor(event,'M')"><span class="rotor-arrow rotor-up">▲</span><div class="rotor-window" id="rM">A</div><span class="rotor-arrow rotor-dn">▼</span></div>
+                    <span class="text-[9px]" style="color:#888">R<input id="ringM" type="number" min="1" max="26" value="1" class="w-8 brass rounded text-center text-[9px]" onchange="reprocess()"></span>
+                  </div>
+                  <div class="flex flex-col items-center gap-1">
+                    <select id="wR" class="brass rounded px-1 text-[10px]" onchange="reprocess()"><option value="I">I</option><option value="II">II</option><option value="III" selected>III</option></select>
+                    <div class="rotor-knob" data-rot="R" onmousedown="startDragRotor(event,'R')" ontouchstart="startDragRotor(event,'R')"><span class="rotor-arrow rotor-up">▲</span><div class="rotor-window" id="rR">A</div><span class="rotor-arrow rotor-dn">▼</span></div>
+                    <span class="text-[9px]" style="color:#888">R<input id="ringR" type="number" min="1" max="26" value="1" class="w-8 brass rounded text-center text-[9px]" onchange="reprocess()"></span>
+                  </div>
+                </div>
+
+                <!-- KANAN: POWER BLOCK (GAUGE + KNOB PUTAR + 2 TERMINAL) -->
+                <div class="power-block">
+                  <div class="gauge"><div class="gauge-scale"><span>0</span><span>4.5V</span></div><div class="needle" id="needle"></div></div>
+                  <div class="pwr-knob" id="pwrKnob" onclick="cyclePower()" title="OFF → BAT → EXT"></div>
+                  <div class="pwr-label" id="pwrLabel">AUS</div>
+                  <div class="terminals" title="External Power"><span class="terminal"></span><span class="terminal"></span></div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- LAMPBOARD -->
+            <div class="plate p-3 mb-2" style="background:linear-gradient(180deg,#0a0f14,#05080a)">
+              <p class="text-[9px] uppercase tracking-[0.3em] mb-2 text-center" style="color:#5a6a7a">— Lampenfeld —</p>
+              <div id="lampboard" class="flex flex-wrap gap-1.5 justify-center max-w-sm mx-auto"></div>
+              <p id="lampLog" class="text-center text-[10px] mt-1.5 font-mono" style="color:#ffb347;min-height:14px">— bereit —</p>
+            </div>
+
+            <!-- KEYBOARD DENGAN: SWITCH KIRI → TOMBOL O MERAH KIRI → KEYS → TOMBOL O MERAH KANAN → DIMMER KANAN -->
+            <div class="plate p-3 mb-2">
+              <p class="text-[9px] uppercase tracking-[0.3em] mb-2 text-center" style="color:#c9a96a">— Tastatur —</p>
+
+              <div class="kb-wrap">
+                <!-- KIRI LUAR: SWITCH ON/OFF -->
+                <div class="flex flex-col items-center gap-1 mr-1">
+                  <div class="side-switch" id="swLeft" onclick="toggleLeftSwitch()" title="Power ON/OFF"><div class="lever"></div></div>
+                  <span class="text-[8px]" style="color:#c9a96a">EIN<br>AUS</span>
+                </div>
+                <!-- KIRI DALAM: TOMBOL O MERAH (RESET) -->
+                <div class="flex flex-col items-center mr-1">
+                  <div class="red-O" onclick="resetRotors()" title="Reset Rotoren → AAA">O</div>
+                  <span class="red-label">NULL</span>
+                </div>
+
+                <!-- KEYBOARD QWERTZ ENIGMA ASLI -->
+                <div id="keyboard" class="flex flex-col items-center gap-1.5"></div>
+
+                <!-- KANAN DALAM: TOMBOL O MERAH (LAMP TEST) -->
+                <div class="flex flex-col items-center ml-1">
+                  <div class="red-O" onmousedown="lampTest(true)" onmouseup="lampTest(false)" ontouchstart="lampTest(true)" ontouchend="lampTest(false)" title="Lampenprüfung — Alle Lampen an">O</div>
+                  <span class="red-label">PRF</span>
+                </div>
+                <!-- KANAN LUAR: DIMMER PUTAR -->
+                <div class="flex flex-col items-center gap-1 ml-1" style="height:90px;justify-content:center">
+                  <input type="range" min="20" max="100" value="100" class="dimmer" id="dimmer" oninput="setDim(this.value)">
+                  <span class="text-[8px]" style="color:#c9a96a;writing-mode:vertical-rl;transform:rotate(180deg)">HELL</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PLUGBOARD -->
+            <div class="plate p-3 relative" style="min-height:210px">
+              <p class="text-[9px] uppercase tracking-[0.3em] mb-2 text-center" style="color:#c9a96a">— Steckerbrett — tekan-tarik kabel —</p>
+              <div id="plugWrap" class="relative mx-auto" style="width:320px;height:160px">
+                <svg id="plugCables" width="320" height="160" style="position:absolute;inset:0;pointer-events:none"></svg>
+                <div id="plugboard" class="relative" style="width:100%;height:100%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KERTAS LOG -->
+          <div class="paper p-3 mt-3">
+            <div class="flex justify-between items-end border-b border-black/40 pb-1 mb-1.5">
+              <div><p class="text-[9px] uppercase tracking-widest">Abschrift</p><p class="text-[9px]" id="msgDate">Datum: —</p></div>
+              <span class="stamp text-[9px]">GEHEIM</span>
+            </div>
+            <p class="text-[11px] mb-0.5"><span class="opacity-60">Klar:</span> <span id="logPlain">—</span></p>
+            <p class="text-[11px]"><span class="opacity-60">Chiffre:</span> <span id="logCipher">—</span></p>
+            <div class="flex gap-2 mt-2 flex-wrap">
+              <button onclick="copyCipher()" class="brass px-2 py-1 rounded text-[10px]">📋 Salin Sandi</button>
+              <button onclick="clearLog()" class="brass px-2 py-1 rounded text-[10px]">🗑️ Hapus</button>
+              <button onclick="randomCode()" class="brass px-2 py-1 rounded text-[10px]">🎲 Kode Acak</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- KANAN: CODE SHEET + INFO -->
+        <div class="lg:col-span-1 space-y-3">
+          <div class="paper p-3">
+            <p class="text-[9px] uppercase tracking-widest opacity-70">Schlüsselzettel</p>
+            <h2 class="text-sm font-bold mb-1">BUKU KODE HARIAN</h2>
+            <table class="w-full text-[11px] mb-1">
+              <tr><td class="opacity-70 pr-1">Walzen</td><td class="font-bold" id="csWalzen">I II III</td></tr>
+              <tr><td class="opacity-70 pr-1">Ring</td><td class="font-bold" id="csRing">01 01 01</td></tr>
+              <tr><td class="opacity-70 pr-1">Grund</td><td class="font-bold" id="csGrund">A A A</td></tr>
+              <tr><td class="opacity-70 pr-1">Stecker</td><td class="font-bold" id="csStecker">—</td></tr>
+            </table>
+            <div class="grid grid-cols-2 gap-1 mt-2">
+              <button onclick="applyCodeToMachine()" class="brass py-1 rounded text-[10px]">▶ Terapkan</button>
+              <button onclick="copyCodeSheet()" class="brass py-1 rounded text-[10px]">📋 Salin</button>
+            </div>
+          </div>
+
+          <div class="paper p-3 text-[10px] leading-relaxed">
+            <p class="font-bold mb-1 text-xs">📖 Fungsi bagian baru:</p>
+            <ul class="list-disc list-inside space-y-0.5 opacity-90">
+              <li><b>Knob kanan atas</b>: pilih AUS → BAT → EXT (daya). Jarum gauge bergerak saat ketik.</li>
+              <li><b>2 tombol kiri atas</b>: FIL (dimmer) & PRF (tekan tahan = semua lampu nyala).</li>
+              <li><b>Switch kiri keyboard</b>: EIN/AUS = daya utama.</li>
+              <li><b>O merah kiri</b>: NULL = reset rotor ke A-A-A.</li>
+              <li><b>O merah kanan</b>: PRF = cek semua lampu sekaligus.</li>
+              <li><b>Dimmer kanan</b>: putar = atur terang-gelap lampu.</li>
+              <li><b>Tutup kayu</b>: bisa dibuka ke belakang (spare bohlam + instruksi).</li>
+            </ul>
+          </div>
+
+          <div class="paper p-3 text-[10px] leading-relaxed">
+            <p class="font-bold mb-1 text-xs">📱 Jadi aplikasi Android/iOS?</p>
+            <p class="mb-1"><b>YA BISA — 100% dari file HTML ini</b>, 3 opsi termudah:</p>
+            <ol class="list-decimal list-inside space-y-0.5 opacity-90">
+              <li><b>PWA (TERMUDAH, 0 kode tambah)</b>: buka file di Chrome/Safari → titik 3 → <b>Tambahkan ke Layar Utama</b>. Jadi seperti app, icon sendiri, offline.</li>
+              <li><b>APK / IPA (untuk toko aplikasi)</b>: pakai <b>Capacitor (Ionic)</b> → cukup <code>npm i @capacitor/core && npx cap add android/ios</code> → file HTML dimasukkan → build jadi APK/IPA siap upload Play Store / App Store.</li>
+              <li><b>WebView sederhana</b>: buat project kosong di Android Studio / Xcode → taruh file HTML di assets → muat dengan WebView → jadi app native.</li>
+            </ol>
+            <p class="mt-1 opacity-80">✅ Tidak perlu ubah 1 baris pun dari kode HTML ini. Semua fungsi (audio, visual, kripto) berjalan sama persis di dalam app.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= ENIGMA CORE (RINGSTELLUNG LENGKAP) ================= */
+const ROTORS={I:{W:"EKMFLGDQVZNTOWYHXUSPAIBRCJ",N:16},II:{W:"AJDKSIRUXBLHWTMCQGZNPYFVOE",N:4},III:{W:"BDFHJLCPRTXVZNYEIWGAKMUSQO",N:21}};
+const UKWB="YRUHQSLDPXNGOKMIEBFZCWVJAT";
+const A="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const idx=c=>c.charCodeAt(0)-65;
+const chr=i=>A[(i+26)%26];
+const fwd=(c,w,p,r)=>{const s=(p-r+26)%26;return chr((idx(w[(idx(c)+s)%26])-s+26)%26);};
+const bwd=(c,w,p,r)=>{const s=(p-r+26)%26;return chr((w.indexOf(chr((idx(c)+s)%26))-s+26)%26);};
+function stepPos(p,r){if(p[1]===ROTORS[r[1]].N){p[0]=(p[0]+1)%26;p[1]=(p[1]+1)%26;}if(p[2]===ROTORS[r[2]].N)p[1]=(p[1]+1)%26;p[2]=(p[2]+1)%26;}
+function buildPlugMap(pr){const m={};for(let i=0;i<26;i++)m[A[i]]=A[i];pr.forEach(p=>{m[p[0]]=p[1];m[p[1]]=p[0];});return m;}
+function enigmaOne(c,pm,r,p,ri){c=pm[c]||c;c=fwd(c,ROTORS[r[2]].W,p[2],ri[2]);c=fwd(c,ROTORS[r[1]].W,p[1],ri[1]);c=fwd(c,ROTORS[r[0]].W,p[0],ri[0]);c=UKBW[idx(c)];c=bwd(c,ROTORS[r[0]].W,p[0],ri[0]);c=bwd(c,ROTORS[r[1]].W,p[1],ri[1]);c=bwd(c,ROTORS[r[2]].W,p[2],ri[2]);return pm[c]||c;}
+
+/* ================= STATE ================= */
+const S={
+  sfx:true, lid:false, power:0, // 0=AUS 1=BAT 2=EXT
+  leftSw:false, dim:100, dimOn:false,
+  rot:["I","II","III"], pos:[0,0,0], ring:[0,0,0], plugs:[],
+  plain:"", cipher:"",
+  drag:{rot:null,y:0,p0:0,from:null,line:null},
+  AC:null
+};
+
+/* ================= AUDIO ================= */
+function au(){if(!S.AC)S.AC=new (window.AudioContext||window.webkitAudioContext)();}
+function sfx(t="key"){
+  if(!S.sfx)return;au();const x=S.AC.currentTime;const o=S.AC.createOscillator();const g=S.AC.createGain();o.connect(g);g.connect(S.AC.destination);
+  const map={key:[180,70,.22,.08,"square"],rotor:[520,340,.15,.07,"triangle"],lamp:[1200,800,.06,.05,"sine"],plug:[300,180,.12,.06,"square"],bell:[880,440,.25,.55,"sine"],click:[900,500,.08,.04,"square"]};
+  const v=map[t]||map.key;o.type=v[4];o.frequency.setValueAtTime(v[0],x);o.frequency.exponentialRampToValueAtTime(v[1],x+v[3]);g.gain.setValueAtTime(v[2],x);g.gain.exponentialRampToValueAtTime(.001,x+v[3]+.01);o.start(x);o.stop(x+v[3]+.02);
+}
+function toggleSound(){S.sfx=!S.sfx;document.getElementById("sfxBtn").textContent=S.sfx?"🔊 SFX ON":"🔇 SFX OFF";if(S.sfx){au();sfx("click");}}
+
+/* ================= POWER + GAUGE ================= */
+function cyclePower(){
+  S.power=(S.power+1)%3;
+  const k=document.getElementById("pwrKnob"),l=document.getElementById("pwrLabel"),n=document.getElementById("needle");
+  const ang=[-60,0,60][S.power],txt=["AUS","BAT","EXT"];
+  k.style.transform="rotate("+ang+"deg)";l.textContent=txt[S.power];
+  n.classList.toggle("on", S.power>0);
+  // keyboard menyala abu-abu kalau OFF
+  document.querySelectorAll(".tkey").forEach(b=>b.classList.toggle("off", S.power===0));
+  sfx("click");
+}
+function toggleLeftSwitch(){
+  S.leftSw=!S.leftSw;document.getElementById("swLeft").classList.toggle("on",S.leftSw);
+  document.querySelectorAll(".tkey").forEach(b=>b.classList.toggle("off", !S.leftSw || S.power===0));
+  sfx("click");
+}
+function gaugePulse(){
+  const n=document.getElementById("needle");
+  n.style.transform="translateX(-50%) rotate(40deg)";
+  setTimeout(()=>n.style.transform="translateX(-50%) rotate("+(S.power>0?25:-40)+"deg)",120);
+}
+
+/* ================= LID ================= */
+function toggleLid(){S.lid=!S.lid;document.getElementById("lid").classList.toggle("open",S.lid);sfx("click");}
+
+/* ================= DIMMER + LAMP TEST ================= */
+function setDim(v){S.dim=+v;document.querySelectorAll(".lamp").forEach(l=>l.style.filter=`brightness(${v/100})`);}
+function toggleDim(){S.dimOn=!S.dimOn;document.querySelectorAll(".lamp").forEach(l=>l.classList.toggle("dim",S.dimOn));sfx("click");}
+let ltTimer=null;
+function lampTest(on){
+  clearTimeout(ltTimer);
+  document.querySelectorAll(".lamp").forEach(l=>l.classList.toggle("on",on));
+  if(on){sfx("lamp");ltTimer=setTimeout(()=>document.querySelectorAll(".lamp").forEach(l=>l.classList.remove("on")),1500);}
+}
+
+/* ================= BUILD UI ================= */
+const ROWS=["QWERTZUIO","ASDFGHJK","PYXCVBNML"];
+function buildLamp(){
+  const el=document.getElementById("lampboard");ROWS.forEach((r,i)=>{
+    const w=document.createElement("div");w.className="flex gap-1.5";w.style.paddingLeft=(i*16)+"px";
+    r.split("").forEach(c=>{const d=document.createElement("div");d.className="lamp";d.id="L"+c;d.textContent=c;w.appendChild(d);});
+    el.appendChild(w);
+  });
+}
+function buildKb(){
+  const el=document.getElementById("keyboard");ROWS.forEach((r,i)=>{
+    const w=document.createElement("div");w.className="flex gap-1.5";w.style.paddingLeft=(i*20)+"px";
+    r.split("").forEach(c=>{
+      const b=document.createElement("div");b.className="tkey off";b.textContent=c;b.id="K"+c;
+      const dn=e=>{e.preventDefault();pressKey(c);};
+      b.addEventListener("mousedown",dn);b.addEventListener("touchstart",dn,{passive:false});
+      w.appendChild(b);
+    });
+    el.appendChild(w);
+  });
+}
+const PP={};
+function buildPlug(){
+  const el=document.getElementById("plugboard");
+  const T="QWERTZUIOASDFGHJKPYXCVBNML".split("");
+  let x=6,y=14;T.forEach((c,i)=>{
+    const d=document.createElement("div");d.className="plug-hole";d.id="P"+c;d.style.position="absolute";d.style.left=x+"px";d.style.top=y+"px";
+    d.innerHTML=`<span class="plug-label">${c}</span>`;
+    d.addEventListener("mousedown",e=>sc(e,c));d.addEventListener("touchstart",e=>sc(e,c),{passive:false});
+    d.addEventListener("mouseup",e=>ec(e,c));d.addEventListener("touchend",e=>ec(e,c));
+    el.appendChild(d);PP[c]={x:x+12,y:y+12};
+    x+=34;if(i===8){x=22;y=72;}if(i===16){x=44;y=130;}
+  });
+}
+
+/* ================= TEKAN TOMBOL MESIN ================= */
+let lampTO=null;
+function pressKey(c){
+  if(S.power===0 || !S.leftSw) return; // mesin mati = tidak respon
+  const k=document.getElementById("K"+c);k.classList.add("pressed");setTimeout(()=>k.classList.remove("pressed"),110);
+  sfx("key");
+  const pm=buildPlugMap(S.plugs),rot=[...S.rot],pos=[...S.pos],ri=[...S.ring];
+  stepPos(pos,rot);S.pos=pos;renderRot();sfx("rotor");
+  const out=enigmaOne(c,pm,rot,pos,ri);
+  document.querySelectorAll(".lamp").forEach(l=>l.classList.remove("on"));
+  const lo=document.getElementById("L"+out);if(lo){lo.classList.add("on");lo.style.filter=`brightness(${S.dim/100})`;}
+  sfx("lamp");gaugePulse();
+  clearTimeout(lampTO);lampTO=setTimeout(()=>{const e=document.getElementById("L"+out);if(e)e.classList.remove("on");},500);
+  S.plain+=c;S.cipher+=out;
+  document.getElementById("logPlain").textContent=fmt(S.plain);
+  document.getElementById("logCipher").textContent=fmt(S.cipher);
+  document.getElementById("lampLog").textContent=`${c} → ${out}`;
+  if(S.plain.length>0 && S.plain.length%20===0)sfx("bell");
+  updCS();
+}
+function fmt(s){return s?(s.match(/.{1,5}/g)||[]).join(" "):"—";}
+
+/* ================= ROTOR ================= */
+function renderRot(){document.getElementById("rL").textContent=chr(S.pos[0]);document.getElementById("rM").textContent=chr(S.pos[1]);document.getElementById("rR").textContent=chr(S.pos[2]);}
+function setR(i,v){S.pos[i]=(v+26)%26;renderRot();sfx("rotor");reprocess();}
+function resetRotors(){S.pos=[0,0,0];renderRot();sfx("rotor");reprocess();}
+function startDragRotor(e,w){
+  e.preventDefault();const i=w==="L"?0:w==="M"?1:2;S.drag.rot=i;
+  S.drag.y=(e.touches?e.touches[0].clientY:e.clientY);S.drag.p0=S.pos[i];
+  const mv=ev=>{const y=(ev.touches?ev.touches[0].clientY:ev.clientY);setR(i,S.drag.p0-Math.round((y-S.drag.y)/16));};
+  const up=()=>{document.removeEventListener("mousemove",mv);document.removeEventListener("mouseup",up);document.removeEventListener("touchmove",mv);document.removeEventListener("touchend",up);};
+  document.addEventListener("mousemove",mv);document.addEventListener("mouseup",up);
+  document.addEventListener("touchmove",mv,{passive:false});document.addEventListener("touchend",up);
+}
+
+/* ================= PLUGBOARD KABEL ================= */
+const CC=["#e74c3c","#3498db","#2ecc71","#f39c12","#9b59b6","#1abc9c","#e67e22","#ecf0f1","#d35400","#34495e"];
+function sc(e,from){
+  e.preventDefault();
+  const ex=S.plugs.find(p=>p[0]===from||p[1]===from);
+  if(ex){S.plugs=S.plugs.filter(p=>p!==ex);draw();sfx("plug");reprocess();return;}
+  S.drag.from=from;const svg=document.getElementById("plugCables");
+  const ln=document.createElementNS("http://www.w3.org/2000/svg","path");
+  ln.setAttribute("stroke",CC[S.plugs.length%CC.length]);ln.setAttribute("stroke-width","4");ln.setAttribute("fill","none");ln.setAttribute("stroke-linecap","round");
+  svg.appendChild(ln);S.drag.line=ln;
+  const p=PP[from];
+  const mv=ev=>{const r=svg.getBoundingClientRect();const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;const cy=(ev.touches?ev.touches[0].clientY:ev.clientY)-r.top;ln.setAttribute("d",cp(p.x,p.y,cx,cy));};
+  const up=ev=>{
+    document.removeEventListener("mousemove",mv);document.removeEventListener("mouseup",up);document.removeEventListener("touchmove",mv);document.removeEventListener("touchend",up);
+    let t=null,b=26;const r=svg.getBoundingClientRect();
+    const cx=(ev.changedTouches?ev.changedTouches[0].clientX:ev.clientX)-r.left;
+    const cy=(ev.changedTouches?ev.changedTouches[0].clientY:ev.clientY)-r.top;
+    for(const q in PP){const d=Math.hypot(PP[q].x-cx,PP[q].y-cy);if(d<b){b=d;t=q;}}
+    if(t && t!==from && !S.plugs.find(p=>p[0]===t||p[1]===t)){S.plugs.push([from,t].sort());sfx("plug");}
+    S.drag.line=null;S.drag.from=null;draw();reprocess();
+  };
+  document.addEventListener("mousemove",mv);document.addEventListener("mouseup",up);
+  document.addEventListener("touchmove",mv,{passive:false});document.addEventListener("touchend",up);
+}
+function ec(e,c){}
+function cp(x1,y1,x2,y2){const m=(x1+x2)/2,d=Math.min(30,Math.abs(y2-y1)/2+8);return`M ${x1} ${y1} C ${x1} ${y1+d}, ${x2} ${y2-d}, ${x2} ${y2}`;}
+function draw(){
+  const svg=document.getElementById("plugCables");
+  [...svg.children].forEach(c=>{if(c!==S.drag.line)svg.removeChild(c);});
+  document.querySelectorAll(".plug-hole").forEach(h=>h.classList.remove("paired"));
+  S.plugs.forEach((p,i)=>{
+    document.getElementById("P"+p[0]).classList.add("paired");
+    document.getElementById("P"+p[1]).classList.add("paired");
+    const a=PP[p[0]],b=PP[p[1]];
+    const pa=document.createElementNS("http://www.w3.org/2000/svg","path");
+    pa.setAttribute("d",cp(a.x,a.y,b.x,b.y));pa.setAttribute("stroke",CC[i%CC.length]);pa.setAttribute("stroke-width","4");pa.setAttribute("fill","none");pa.setAttribute("stroke-linecap","round");
+    pa.style.pointerEvents="stroke";pa.style.cursor="pointer";
+    pa.onclick=()=>{S.plugs=S.plugs.filter(x=>x!==p);draw();sfx("plug");reprocess();};
+    svg.appendChild(pa);
+  });
+}
+
+/* ================= CODE SHEET ================= */
+function today(){return new Date().toISOString().slice(0,10);}
+function updCS(){
+  document.getElementById("csWalzen").textContent=S.rot.join(" ");
+  document.getElementById("csRing").textContent=S.ring.map(r=>String(r+1).padStart(2,"0")).join(" ");
+  document.getElementById("csGrund").textContent=S.pos.map(p=>chr(p)).join(" ");
+  document.getElementById("csStecker").textContent=S.plugs.length?S.plugs.map(p=>p[0]+p[1]).join(" "):"—";
+}
+function readSt(){
+  S.rot=[document.getElementById("wL").value,document.getElementById("wM").value,document.getElementById("wR").value];
+  S.ring=[+document.getElementById("ringL").value-1,+document.getElementById("ringM").value-1,+document.getElementById("ringR").value-1];
+}
+function reprocess(){readSt();renderRot();draw();updCS();}
+function applyCodeToMachine(){readSt();renderRot();updCS();sfx("bell");alert("✅ Kode diterapkan. Penerima WAJIB masukkan angka sama persis.");}
+function randomCode(){
+  const r=["I","II","III"].sort(()=>Math.random()-0.5);
+  document.getElementById("wL").value=r[0];document.getElementById("wM").value=r[1];document.getElementById("wR").value=r[2];
+  document.getElementById("ringL").value=1+Math.floor(Math.random()*26);
+  document.getElementById("ringM").value=1+Math.floor(Math.random()*26);
+  document.getElementById("ringR").value=1+Math.floor(Math.random()*26);
+  S.pos=[Math.floor(Math.random()*26),Math.floor(Math.random()*26),Math.floor(Math.random()*26)];
+  const pl=A.split("").sort(()=>Math.random()-0.5);S.plugs=[];
+  for(let i=0;i<20;i+=2)S.plugs.push([pl[i],pl[i+1]].sort());
+  reprocess();sfx("bell");
+}
+function copyCodeSheet(){
+  const t=`⚠️ GEHEIM\n══════════════════\nSchlüsselzettel ${today()}\nWalzen: ${document.getElementById("csWalzen").textContent}\nRing: ${document.getElementById("csRing").textContent}\nGrund: ${document.getElementById("csGrund").textContent}\nStecker: ${document.getElementById("csStecker").textContent}\n══════════════════\nHancurkan setelah pakai!`;
+  navigator.clipboard.writeText(t).then(()=>sfx("bell"));
+}
+
+/* ================= LAIN-LAIN ================= */
+function copyCipher(){if(S.cipher)navigator.clipboard.writeText(fmt(S.cipher));}
+function clearLog(){S.plain="";S.cipher="";document.getElementById("logPlain").textContent="—";document.getElementById("logCipher").textContent="—";document.getElementById("lampLog").textContent="— bereit —";}
+function resetMachine(){
+  S.pos=[0,0,0];S.ring=[0,0,0];S.rot=["I","II","III"];S.plugs=[];S.plain="";S.cipher="";S.power=0;S.leftSw=false;S.dim=100;
+  document.getElementById("wL").value="I";document.getElementById("wM").value="II";document.getElementById("wR").value="III";
+  document.getElementById("ringL").value=1;document.getElementById("ringM").value=1;document.getElementById("ringR").value=1;
+  document.getElementById("pwrKnob").style.transform="rotate(-60deg)";document.getElementById("pwrLabel").textContent="AUS";
+  document.getElementById("needle").classList.remove("on");
+  document.getElementById("swLeft").classList.remove("on");
+  document.getElementById("dimmer").value=100;document.querySelectorAll(".lamp").forEach(l=>l.style.filter="brightness(1)");
+  document.querySelectorAll(".tkey").forEach(b=>b.classList.add("off"));
+  clearLog();reprocess();sfx("rotor");
+}
+document.addEventListener("keydown",e=>{
+  if(e.repeat)return;const c=e.key.toUpperCase();
+  if(A.includes(c) && document.getElementById("K"+c)){e.preventDefault();pressKey(c);}
+});
+
+/* ================= INIT ================= */
+document.addEventListener("DOMContentLoaded",()=>{
+  buildLamp();buildKb();buildPlug();renderRot();draw();
+  document.getElementById("msgDate").textContent="Datum: "+today();
+  document.querySelectorAll(".tkey").forEach(b=>b.classList.add("off"));
+  updCS();au();
+});
+</script>
+</html>
